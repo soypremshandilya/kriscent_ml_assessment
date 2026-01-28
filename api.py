@@ -3,14 +3,26 @@ from pydantic import BaseModel
 import joblib
 import pandas as pd
 import os
+import sys
+
+# Ensure the root directory is in the python path so 'src' can be found
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.features import engineer_features
 
 # 1. Initialize FastAPI
 app = FastAPI(title="Fraud Detection API")
 
-# 2. Load the model
-model_path = 'models/improved_fraud_model.pkl'
-model = joblib.load(model_path)
+# 2. Robust Model Loading
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, 'models', 'improved_fraud_model.pkl')
+
+if os.path.exists(model_path):
+    model = joblib.load(model_path)
+else:
+    # This will show up in your Render Logs to help us debug
+    print(f"CRITICAL ERROR: Model file not found at {model_path}")
+    model = None
 
 # 3. Define the input data structure
 class Transaction(BaseModel):
@@ -29,8 +41,11 @@ def home():
 
 @app.post("/predict")
 def predict(data: Transaction):
+    if model is None:
+        return {"error": "Model not loaded on server"}
+        
     # Convert input to DataFrame
-    input_df = pd.DataFrame([data.dict()])
+    input_df = pd.DataFrame([data.model_dump()]) # dict() is deprecated in newer Pydantic
     
     # Apply your custom feature engineering
     processed_df = engineer_features(input_df)
