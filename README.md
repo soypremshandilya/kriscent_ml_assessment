@@ -2,246 +2,151 @@
 
 ## 📌 Project Overview
 
-This project implements an **end-to-end, production-grade Machine Learning pipeline** for real-world  
-**Credit Card Fraud Detection**.
-
-It covers the **entire ML lifecycle** — from modular data processing and model debugging  
-to performance optimization and **live cloud deployment**.
+This project implements an end-to-end Machine Learning pipeline for real-world Credit Card Fraud Detection.
+It covers the entire ML lifecycle — from modular data processing and model debugging to performance optimization
+and production system design.
 
 Key focus areas:
-
 - Reproducibility & stability
 - Handling extreme class imbalance
 - Production-ready architecture
 - Real-world metric optimization
 
----
-
-## 🚀 Live Production API
-
-Swagger UI (Interactive Docs):  
-https://kriscent-fraud-api.onrender.com/docs
-
-Note:
-
-- Hosted on a free tier
-- Initial request may take 30–60 seconds to wake the server
-
----
+------------------------------------------------------------
 
 ## 🛠️ Folder Structure
 
-```plaintext
-├── data/               # Dataset (creditcard.csv)
-├── docs/               # System Design & Architecture
-├── models/             # Task 1: Model Persistence (.pkl files)
-├── src/                # Task 1: Modular Codebase
-│   ├── data_pipeline.py
-│   ├── features.py
-│   ├── model_trainer.py
-│   └── inference.py
-├── api.py              # Task 4: FastAPI Entry Point
-├── main.py             # Entry point for Production Pipeline
-├── research_task.py    # Task 2 & 3: Debugging & Improvement
-├── test_api.py         # Manual API Verification Script
-├── requirements.txt    # Reproducibility & Dependencies
-└── README.md           # Documentation
-```
+    ├── data/               # Dataset (creditcard.csv)
+    ├── docs/               # Task 4: System Design & Diagrams
+    ├── models/             # Task 1: Model Persistence (.pkl files)
+    ├── src/                # Task 1: Modular Codebase
+    │   ├── data_pipeline.py
+    │   ├── features.py
+    │   ├── model_trainer.py
+    │   └── inference.py
+    ├── main.py             # Entry point for Production Pipeline
+    ├── research_task.py    # Task 2 & 3: Debugging & Improvement
+    ├── requirements.txt    # Reproducibility
+    └── README.md           # Decisions & Trade-offs
 
----
+------------------------------------------------------------
 
 ## 🚀 Implementation Details
 
----
-
 ### 🔹 Task 1: Production Pipeline
 
-Data Cleaning
+Data Cleaning:
+    - Removed duplicate transactions
+    - Applied stratified train-test splits to preserve class balance
 
-```text
-- Removed duplicate transactions
-- Applied stratified train-test split to preserve class balance
-```
+Feature Engineering:
+    Implemented Features:
+    - log_amount     → Handles skewness in transaction amounts
+    - hour           → Captures temporal fraud patterns
+    - amt_per_sec    → Measures transaction velocity
+    - amt_deviation  → Identifies anomalous spending behavior
 
-Feature Engineering
+Reproducibility:
+    - Global random seeds applied (random_state = 42)
+    - Ensures consistent results across multiple runs
 
-```text
-Implemented Features:
-- log_amount     → Handles skewness in transaction amounts
-- hour           → Captures temporal fraud patterns
-- amt_per_sec    → Measures transaction velocity
-- amt_deviation  → Identifies anomalous spending behavior
-```
+Modularization:
+    - Data ingestion, feature engineering, and model training
+      decoupled into independent .py modules
 
-Reproducibility
-
-```text
-- Global random seeds applied (random_state = 42)
-- Ensures consistent and repeatable results
-```
-
-Modularization
-
-```text
-- Data ingestion, feature engineering, model training,
-  and inference decoupled into independent modules
-```
-
----
+------------------------------------------------------------
 
 ### 🔹 Task 2: Model Debugging & Stability
 
-Observed Problem
+Observed Problem:
+    - High variance across runs
+    - Unstable predictions for identical inputs
 
-```text
-- High variance across runs
-- Unstable predictions for identical inputs
-```
+Root Cause:
+    - Random data splitting
+    - Inconsistent minority class (fraud) sampling during training
 
-Root Cause
+Solution:
+    - Implemented Stratified Splitting
+    - Fixed random seeds across the pipeline
 
-```text
-- Random data splitting
-- Inconsistent minority class (fraud) sampling
-```
+Metrics:
+    Score Variance:
+    - Before → 0.1129
+    - After  → 0.0083
 
-Solution
-
-```text
-- Implemented Stratified Splitting
-- Fixed random seeds across the pipeline
-```
-
-Metrics
-
-```text
-Score Variance:
-Before → 0.1129
-After  → 0.0083
-Variance Reduction → ~92%
-```
-
----
+------------------------------------------------------------
 
 ### 🔹 Task 3: Performance Improvement
 
-Objective
+Objective:
+    - Improve baseline Recall by ≥ 10%
 
-```text
-- Improve baseline Recall by ≥ 10%
-```
+Techniques Applied:
+    - Cost-Sensitive Learning
+    - Classification Threshold Tuning (Threshold = 0.1)
 
-Techniques Applied
+Result:
+    Recall:
+    - Baseline → 0.7474
+    - Improved → 0.8526
+    - Gain     → +14.08%
 
-```text
-- Cost-Sensitive Learning (class_weight='balanced')
-- Classification Threshold Tuning (threshold = 0.1)
-```
+Justification:
+    Lowering the threshold prioritizes fraud detection, which is more
+    critical than minimizing false positives in financial risk systems.
 
-Result
+------------------------------------------------------------
 
-```text
-Recall:
-Baseline → 0.7474
-Improved → 0.8526
-Gain     → +14.08%
-```
+### 🔹 Task 4: ML System Design
 
-Justification
+Architecture:
+    - Real-time inference via REST API
+    - Kafka for streaming data ingestion
+    - Prometheus for monitoring
 
-```text
-Lowering the threshold prioritizes fraud detection,
-which is more critical than minimizing false positives
-in financial risk systems.
-```
+Operational Strategy:
+    - Automated data drift detection
+    - Scheduled retraining to mitigate concept drift
 
----
+Diagrams:
+    Full system design diagrams and documentation
+    available in docs/architecture.md
 
-### 🔹 Task 4: ML System Design & Deployment
+------------------------------------------------------------
 
-Architecture
+## ⚙️ How to Run Locally
 
-```text
-- Real-time inference via FastAPI
-- REST-based prediction service
-- Model persistence using joblib
-- Deployed on Render Cloud Platform
-```
+1. Clone the Repository
 
-Operational Strategy
+    git clone https://github.com/soypremshandilya/kriscent_ml_assessment.git
+    cd kriscent_ml_assessment
 
-```text
-- Live API-based fraud prediction
-- Modular pipeline enables future retraining
-- Swagger UI for easy validation and testing
-```
+2. Set Up Environment (Recommended: Virtual Environment)
 
-Documentation
+    python -m venv venv
+    source venv/bin/scripts/activate   # Windows: venv\Scripts\activate
+    pip install -r requirements.txt
 
-```text
-- Interactive API docs via Swagger UI
-- System design notes available in docs/
-```
+3. Run Production Pipeline (Task 1)
 
----
+    python main.py
 
-## 🧪 Testing the System
+4. Run Research & Improvement (Tasks 2 & 3)
 
-Interactive Testing
+    python research_task.py
 
-```text
-- Open /docs endpoint
-- Use POST /predict
-- Click "Try it out"
-```
+5. Start the API (Task 4)
 
-Manual Testing
+    uvicorn api:app --reload
 
-```text
-pip install requests
-python test_api.py
-```
+    Open:
+    http://127.0.0.1:8000/docs
 
-Sample Fraudulent Payload
+------------------------------------------------------------
 
-```json
-{
-  "Time": 406.0,
-  "V1": -2.3122,
-  "V2": 1.9519,
-  "V3": -1.6098,
-  "V4": 3.9979,
-  "V5": -0.5221,
-  "V6": -1.4265,
-  "V7": -2.5373,
-  "V8": 1.3916,
-  "V9": -2.77,
-  "V10": -2.7722,
-  "V11": 3.202,
-  "V12": -2.8999,
-  "V13": -0.5952,
-  "V14": -4.2892,
-  "V15": 0.3897,
-  "V16": -1.1407,
-  "V17": -2.83,
-  "V18": -0.0168,
-  "V19": 0.4169,
-  "V20": 0.1269,
-  "V21": 0.5172,
-  "V22": -0.035,
-  "V23": -0.4652,
-  "V24": 0.3201,
-  "V25": 0.0445,
-  "V26": 0.1778,
-  "V27": 0.2611,
-  "V28": -0.1432,
-  "Amount": 1.0
-}
-```
+## 👤 Author
 
----
-
-Created By Prem Shandilya  
-Final Year MCA Student | AI & ML  
+Prem Shandilya  
 UPES  
 SAP ID: 590017213
